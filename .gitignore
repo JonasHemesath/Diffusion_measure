@@ -1,0 +1,6 @@
+*.png
+*.json
+/.vscode
+/analysis
+/test
+/__pycache__
