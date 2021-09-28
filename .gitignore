@@ -1,6 +1,7 @@
 *.png
-*.json
+aquisition.json
 /.vscode
 /analysis
 /test
 /__pycache__
+/images

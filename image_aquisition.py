@@ -1,6 +1,7 @@
 import cv2
 import time
 import json
+import os
 
 from image_analysis import image_analysis
 
@@ -10,12 +11,11 @@ def run_script():
     #                       "ramp_frames": Number of frames to aquire to initialize the cameras brightness
     #                       "camera": Index of camera to use
     #                       "focus": Focus parameter for the camera (specified for LogiTech: https://stackoverflow.com/questions/19813276/manually-focus-webcam-from-opencv)
-    #                       "file_path": Storage location for the images
+    #                       "file_path": Storage location for the images and analysis
     #                       "time_interval": Total time of the experiment in minutes
     #                       "time_increment": Time between to image aquisitions in seconds
     #                       "average": Number of images to average per timepoint
     #                       "exposure": Define exposure time of camera
-    #                       "save_path": Location for saving analysis results
 
     print("Make sure to define file_path and save_path in your aquisition file!\n")
     aquisition_file = input("Enter path to aquisition file:\n")
@@ -23,27 +23,52 @@ def run_script():
     with open(aquisition_file) as f:
         aquisition = json.load(f)
     
+    fp = aquisition["file_path"] + "images\\"
+    sp = aquisition["file_path"] + "analysis\\"
+
+    if not os.path.isdir(fp):
+        os.makedirs(fp)
+    if not os.path.isdir(sp):
+        os.makedirs(sp)
+
     rampframes = aquisition["ramp_frames"]
 
     # initialize the camera
     cam = cv2.VideoCapture(aquisition["camera"])   # index of camera
 
     focus = aquisition["focus"]
+    cam.set(cv2.CAP_PROP_AUTOFOCUS, 0)      # Turn off autofocus
     cam.set(28, focus)                      # Set focus
     cam.set(15, aquisition["exposure"])     # Set exposure
 
-    for i in range(rampframes):
-        temp = cam.read()
+    
 
-    # Preview
-    s, img = cam.read()
-    if s:    # frame captured without any errors
-        cv2.namedWindow("cam-test")
-        cv2.imshow("cam-test",img)
-        cv2.waitKey(0)
-        cv2.destroyWindow("cam-test")
+    # Adjust focus
+    print("Current focus value: " + str(focus))
+    while True:
+        for i in range(rampframes):
+            temp = cam.read()
+        s, img = cam.read()
+        if s:    # frame captured without any errors
+            cv2.namedWindow("cam-test")
+            cv2.imshow("cam-test",img)
+            cv2.waitKey(0)
+            cv2.destroyWindow("cam-test")
+        question = input("Focus good? y/n (x: abort experiment):\n")
+        if question == "y":
+            break
+        elif question == "x":
+            return
+        else:
+            try:
+                focus = int(input("Enter new focus value (min: 0, max: 255, increment: 5):\n"))
+                cam.set(28, focus)
+            except ValueError:
+                print("Please enter an integer value.\n")
+
+    for i in range(5*rampframes):
+        temp = cam.read()
         
-    fp = aquisition["file_path"]
     a = aquisition["average"]
     
     start = input("Start experiment? y/n \n")

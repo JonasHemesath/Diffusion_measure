@@ -1,0 +1,10 @@
+{
+    "ramp_frames": 40,
+    "camera": 1,
+    "focus": 255,
+    "file_path": "C:\\My\\example\\path\\",
+    "time_increment": 10,
+    "time_interval": 1,
+    "average": 10,
+    "exposure": -5
+}

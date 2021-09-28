@@ -5,8 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def image_analysis(aquisition):
-    fp = aquisition["file_path"]
-    sp = aquisition["save_path"]
+    fp = aquisition["file_path"] + "images\\"
+    sp = aquisition["file_path"] + "analysis\\"
+
+    if not os.path.isdir(sp):
+        os.makedirs(sp)
 
     image_groups = {f[0:6]: [] for f in os.listdir(fp)}
     for f in os.listdir(fp):
@@ -29,6 +32,7 @@ def image_analysis(aquisition):
 
     times_min = [i/60 for i in times]
 
+    # Calculate pixel-wise difference to offset
     images_offset = [image-avg_offset for image in avg_images]
 
     for i, image in enumerate(images_offset):
@@ -41,6 +45,8 @@ def image_analysis(aquisition):
             readout[j,i] = np.sum(image[:,:,j]) / (image.shape[0] * image.shape[1])
             readout[3,i] += abs(readout[j,i])
 
+
+    # Plot pixel-wise comparison to offset
     fig, ax = plt.subplots(4,1)
     labels = ["R", "G", "B", "Combined absolute difference"]
     colors = ["tab:red", "tab:green", "tab:blue", "k"]
@@ -52,8 +58,27 @@ def image_analysis(aquisition):
 
     fig.set_size_inches(6, 10)
     fig.tight_layout()
-    fig.savefig(sp + "plot.png")
+    fig.savefig(sp + "plot_pixelwise.png")
 
+    #Calculate overall difference to offset
+    readout_overall = np.zeros((4, len(avg_images)))
+
+    for i, image in enumerate(avg_images):
+        for j in range(3):
+            readout_overall[j,i] = (np.mean(image[:,:,j]) - np.mean(avg_offset[:,:,j]))
+            readout_overall[3,i] += abs(readout_overall[j,i])
+
+    # Plot overall difference
+    fig, ax = plt.subplots(4,1)
+
+    for i in range(4):
+        ax[i].plot(times_min, readout_overall[i,:], colors[i])
+        ax[i].set(xlabel = "Time [min]", ylabel = "Overall difference")
+        ax[i].set_title(labels[i])
+
+    fig.set_size_inches(6, 10)
+    fig.tight_layout()
+    fig.savefig(sp + "plot_overall.png")
 
 if __name__ == '__main__':
     aquisition_file = input("Enter path to aquisition file:\n")
