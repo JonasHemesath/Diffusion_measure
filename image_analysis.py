@@ -24,7 +24,7 @@ def image_analysis(aquisition):
             avg_images.append(temp.astype(np.uint8))
             for i, c in enumerate(k):
                 if c != 0:
-                    times.append(int(k[i:-1]))
+                    times.append(int(k[i:]))
                     break
         else:
             avg_offset = np.mean(v, axis=0)
