@@ -91,7 +91,7 @@ def run_script():
 
             if current_time > next_aquisition:
                 ext = str(int(current_time))
-                ext = (5-len(ext))*"0" + ext
+                ext = (6-len(ext))*"0" + ext
                 for i in range(a):
                     s, img = cam.read()
 
